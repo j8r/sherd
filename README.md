@@ -18,7 +18,20 @@ The main purpose is to have faster dependencies resolution and download.
 
 Several features arestill lacking compared to `shards`.
 
+## Usage
+
+Install locked dependencies:
+
+`sherd install`
+
+Build the first target:
+
+`sherd build`
+
 ## Configuration
+
+The configuration file is `sherd.ini` and the lock file is `sherd.lock`,
+but `shards.yml` and `shards.lock` can still be used.
 
 ### Dependencies
 

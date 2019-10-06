@@ -1,0 +1,25 @@
+name: sherd
+version: 0.0.1
+
+authors:
+  - Julien Reichardt <mi@jrei.ch>
+
+description: Crystal package manager.
+
+targets:
+  sherd:
+    main: src/sherd_cli.cr
+
+dependencies:
+  clicr:
+    github: j8r/clicr
+  crystar:
+    github: naqvis/crystar
+  semantic_compare:
+    github: j8r/semantic_compare
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+
+license: ISC
