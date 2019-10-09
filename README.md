@@ -49,6 +49,42 @@ somelib = gitlab.com/user/somelib heads/dev
 otherlib = bitbucket.com/user/otherlib commit:1a400f9c6440fbrcb093066f54959eg9fbde5659
 ```
 
+### Scripts
+
+Executes shell commands, or build a Crystal source file.
+
+`postinstall` is a special key: the command will be executed at the end of the library installation.
+
+The variable `extra`, like `extra="--static"`, can be used to append extra instructions to the command.
+
+**Example:**
+
+```ini
+[package]
+name = sherd
+
+[scripts]
+postinstall = make
+build = src/sherd.cr
+build:test = src/other.cr
+```
+
+To run a script, use `sherd exec [script name]`, or `sherd e [script name]`
+
+If the string corresponds to a Crystal source file, it will be build with `crystal build` into `bin/${package_name}`.
+
+**Example:** `sherd e build extra="--static"` will build statically a `bin/sherd` executable.
+
+To change the binary name to build, add a name after a semicolon (like `:test`)
+
+**Example:** `sherd e build:test` will build `bin/test`.
+
+Multiple targets be run too:
+
+**Example:** `sherd e build run`
+
+Note: There is no `targets` nor `executables` sections compared to Shards.
+
 ## License
 
 Copyright (c) 2019 Julien Reichardt - ISC License

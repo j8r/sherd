@@ -27,15 +27,22 @@ module Sherd::CLI
           alias:     'b',
           inherit:   %w(quiet verbose),
           action:    "build",
-          info:      "Builds all targets, or some with `crystal build`",
-          arguments: %w(targets...),
+          info:      "Alias for `sherd exec build`",
           variables: {
-            crystal_arguments: {
-              info: "Pass arguments to `crystal build`",
+            extra: {
+              info: "Extra instructions to pass to the command",
             },
-            directory: {
-              info:    "Directory output",
-              default: Sherd.project.bin_directory.to_s,
+          },
+        },
+        exec: {
+          alias:     'e',
+          inherit:   %w(quiet verbose),
+          action:    "exec",
+          info:      "Executes a script, or build a Crystal file",
+          arguments: %w(scripts...),
+          variables: {
+            extra: {
+              info: "Extra instructions to pass to the command",
             },
           },
         },
@@ -69,35 +76,13 @@ module Sherd::CLI
     exit 1
   end
 
-  def build(quiet : Bool, verbose : Bool, directory : String, targets : Array(String), crystal_arguments : String? = nil)
-    Dir.mkdir_p directory if directory == Sherd.project.bin_directory.to_s
-
-    sherd_targets = Sherd.project.config.targets || raise "No targets available"
-
-    if !targets.empty?
-      targets.each do |name|
-        build_target name, sherd_targets[name], crystal_arguments
-      end
-    else
-      sherd_targets.each do |name, path|
-        build_target name, path, crystal_arguments
-      end
-    end
+  def build(quiet : Bool, verbose : Bool, extra : String? = nil)
+    exec quiet, verbose, ["build"], extra
   end
 
-  private def build_target(target_name : String, path : String, crystal_arguments : String? = nil, directory : String = Sherd.project.bin_directory.to_s)
-    Logger.info "Building", target_name
-
-    process = Process.new(
-      "/bin/sh",
-      {"-c", "crystal build #{path} -o #{Path[directory] / target_name} #{crystal_arguments}"},
-      output: Logger.output,
-      error: Logger.error,
-    )
-    if process.wait.success?
-      Logger.success "Built", target_name
-    else
-      Logger.error "Build failed for '#{target_name}'"
+  def exec(quiet : Bool, verbose : Bool, scripts : Array(String), extra : String? = nil)
+    scripts.each do |script|
+      Sherd.project.exec_script script, extra
     end
   end
 
@@ -105,9 +90,14 @@ module Sherd::CLI
     if lock = Sherd.project.lock?
       package_downloader = PackageDownloader(Lock::DependencyLock).new verbose
       max_name_size = lock.dependencies.max_of { |arg, _| arg.size }
+      # Copy first all libraries, then build executables
+      library_paths = Array(Path).new
       package_downloader.download lock.dependencies do |entry|
-        entry.copy
+        library_paths << entry.copy
         Logger.success "Installed", "#{entry.package_name.ljust(max_name_size)} | #{entry.metadata.version_or_rev}"
+      end
+      library_paths.each do |path|
+        Project.new(path).exec_postinstall?
       end
     else
       raise "For now only installing from lock file is supported"
@@ -118,6 +108,8 @@ module Sherd::CLI
       # download_dependencies dev_deps, verbose
       # end
     end
+    # At the end, run the project's postinstall
+    Sherd.project.exec_postinstall?
   end
 
   def update(quiet : Bool, verbose : Bool)
@@ -126,8 +118,12 @@ module Sherd::CLI
 
   private struct PackageDownloader(D)
     record Entry(D), package_name : String, metadata : D, git : Git do
-      def copy
-        @git.copy @metadata.version_or_rev, Sherd.project.lib_directory / @package_name
+      # Copies the package to the project's library directory.
+      # Returns the path where it was copied.
+      def copy : Path
+        dest = Sherd.project.lib_directory / @package_name
+        @git.copy @metadata.version_or_rev, dest
+        dest
       end
     end
 

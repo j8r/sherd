@@ -33,7 +33,17 @@ struct Sherd::Shards::Config
       sherd_development_dependencies = convert_dependencies_to_metadata development_dependencies
     end
 
-    sherd_targets = targets.try &.transform_values &.["main"]
+    if targets = @targets
+      scripts = @scripts || Hash(String, String).new
+      targets.each do |target_name, target|
+        build_name = "build"
+        if target_name != name
+          build_name += ':' + target_name
+        end
+        scripts[build_name] = target["main"]
+      end
+      @scripts = scripts
+    end
 
     if authors = @authors
       authors_count = 0
@@ -56,7 +66,6 @@ struct Sherd::Shards::Config
       dependencies: sherd_dependencies,
       dev_dependencies: sherd_development_dependencies,
       scripts: @scripts,
-      targets: sherd_targets,
     )
   end
 

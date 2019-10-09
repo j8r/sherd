@@ -24,3 +24,5 @@ scripts:
 targets:
   test:
     main: src/test.cr
+  other:
+    main: src/other.cr

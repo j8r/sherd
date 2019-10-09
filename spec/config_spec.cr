@@ -22,7 +22,14 @@ describe Sherd::Config do
     end
 
     it "parses the authors" { config.authors.not_nil!["main"].should eq "Foo" }
-    it "parses the targets" { config.targets.not_nil!["test"].should eq "src/test.cr" }
+
+    it "parses the scripts" do
+      config.scripts.not_nil!.should eq({
+        "postinstall" => "make something",
+        "build"       => "src/test.cr",
+        "build:other" => "src/other.cr",
+      })
+    end
 
     {dependencies: config.dependencies, dev_dependencies: config.dev_dependencies}.each do |name, deps|
       describe "#{name} section" do

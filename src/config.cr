@@ -39,16 +39,14 @@ struct Sherd::Config
     authors : Hash(String, String)?,
     dependencies : Hash(String, DependencyMetadata)?,
     dev_dependencies : Hash(String, DependencyMetadata)?,
-    scripts : Hash(String, String)?,
-    targets : Hash(String, String)?
+    scripts : Hash(String, String)?
 
   def initialize(
     @package : Package,
     @authors : Hash(String, String)?,
     @dependencies : Hash(String, DependencyMetadata)?,
     @dev_dependencies : Hash(String, DependencyMetadata)?,
-    @scripts : Hash(String, String)?,
-    @targets : Hash(String, String)?
+    @scripts : Hash(String, String)?
   )
   end
 
@@ -78,7 +76,6 @@ struct Sherd::Config
     @authors = ini.delete "authors"
     @dependencies = convert_deps ini.delete("dependencies")
     @dev_dependencies = convert_deps ini.delete("dev_dependencies")
-    @targets = ini.delete "targets"
     @scripts = ini.delete("scripts")
 
     raise "Unknown section: #{ini.keys[0]}" if !ini.empty?
@@ -118,9 +115,6 @@ struct Sherd::Config
 
     if scripts = @scripts
       ini["scripts"] = scripts
-    end
-    if targets = @targets
-      ini["targets"] = targets
     end
 
     INI.build io, ini, space: true
