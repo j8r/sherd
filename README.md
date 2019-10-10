@@ -75,7 +75,7 @@ If the string corresponds to a Crystal source file, it will be build with `cryst
 
 **Example:** `sherd e build extra="--static"` will build statically a `bin/sherd` executable.
 
-To change the binary name to build, add a name after a semicolon (like `:test`)
+To change the binary name to build, add a name after a colon (like `:test`)
 
 **Example:** `sherd e build:test` will build `bin/test`.
 

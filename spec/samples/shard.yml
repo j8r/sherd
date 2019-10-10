@@ -10,14 +10,14 @@ dependencies:
     github: user1/first
     version: ~> 5.0.0
   second:
-    github: user2/second
+    gitlab: user2/second
     version: ~> 5.0.0
 development_dependencies:
   first:
     github: user1/first
     version: ~> 5.0.0
   second:
-    github: user2/second
+    gitlab: user2/second
     version: ~> 5.0.0
 scripts:
   postinstall: make something
