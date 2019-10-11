@@ -56,22 +56,26 @@ struct Sherd::Git
     @repository_path = directory / uri_host / uri_path
     @name = @repository_path.basename
 
-    url = URI.new(scheme: "https", host: uri.host.as(String), path: uri.path.as(String))
-    # url = URI.new(scheme: "ssh", user: "git", host: uri.host.as(String), path: uri.path.as(String)).to_s
-
-    # "ssh://"
     if Dir.exists?(@repository_path)
-      if git({"fetch", "--all", "--force", "--prune", "--tags"})
-        return
-      else
-        # Try to clone the repository again in any case of fetch failing
-        FileUtils.rm_rf @repository_path.to_s
-      end
+      return if git({"fetch", "--all", "--force", "--prune", "--tags"})
+      # Remove the repository and try again to clone it in any case of fetch failing
+      # (for example in case of conflicts)
+      FileUtils.rm_rf @repository_path.to_s
     end
 
-    if !git({"clone", "--mirror", url.to_s, @repository_path.to_s}, chdir: false)
-      raise "Fail to clone #{url}"
+    host = uri.host.as(String)
+    ssh_user = "git"
+    ssh_uri = URI.new(scheme: "ssh", user: ssh_user, host: host, path: uri.path.as(String))
+    return if git_clone ssh_uri
+
+    http_uri = URI.new(scheme: "https", host: uri.host.as(String), path: uri.path.as(String))
+    if !git_clone http_uri
+      raise "Fail to clone #{uri}"
     end
+  end
+
+  private def git_clone(uri : URI) : Bool
+    git({"clone", "--mirror", uri.to_s, @repository_path.to_s}, chdir: false)
   end
 
   # Copy the repository to a given version.
@@ -105,16 +109,11 @@ struct Sherd::Git
     else
       raise "Fail to archive #{@repository_path} at #{version}"
     end
-    # Crystar::Reader.open io, &.each_entry do |entry|
-    # p "Contents of #{entry.name}"
-    # IO.copy entry.io, STDOUT
-    # p "\n"
-    # end
   end
 
   # Yields each version tag, starting with `v`, for a given repository path.
   def each_version(&block : String ->) : Nil
-    if output = git_string { "tag" }
+    if output = git_string({"tag"})
       output.each_line do |tag|
         if version = tag.lchop? 'v'
           yield version

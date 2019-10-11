@@ -54,9 +54,9 @@ struct Sherd::Project
       command = "crystal build #{script_command} -o #{bin_directory / bin_name} #{extra}"
 
       Dir.mkdir_p bin_directory.to_s
-      Logger.info "Building", name
+      Logger.info "Building", bin_name
       if exec command
-        Logger.success "Built", name
+        Logger.success "Built", bin_name
       else
         raise "Build returned an error: '#{command}'"
       end
