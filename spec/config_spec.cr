@@ -49,4 +49,16 @@ describe Sherd::Config do
       end
     end
   end
+
+  describe Sherd::Config::DependencyMetadata do
+    it "parses a path without a scheme" do
+      metadata = Sherd::Config::DependencyMetadata.new "github.com/user/test"
+      metadata.uri.should eq URI.new(host: "github.com", path: "/user/test")
+    end
+
+    it "parses a path with a scheme" do
+      metadata = Sherd::Config::DependencyMetadata.new "https://github.com/user/test"
+      metadata.uri.should eq URI.new(scheme: "https", host: "github.com", path: "/user/test")
+    end
+  end
 end

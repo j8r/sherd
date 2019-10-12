@@ -45,7 +45,7 @@ By default, dependencies will be cloned in Git/SSH, then HTTPS, if nothing is sp
 [dependencies]
 first = github.com/user/first >=4.0.3 || <4.4.0
 dep = github.com/user/dep1 tags/prerelease
-somelib = gitlab.com/user/somelib heads/dev
+somelib = https://gitlab.com/user/somelib heads/dev
 otherlib = bitbucket.com/user/otherlib commit:1a400f9c6440fbrcb093066f54959eg9fbde5659
 ```
 

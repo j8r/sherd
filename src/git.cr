@@ -63,14 +63,15 @@ struct Sherd::Git
       FileUtils.rm_rf @repository_path.to_s
     end
 
-    host = uri.host.as(String)
-    ssh_user = "git"
-    ssh_uri = URI.new(scheme: "ssh", user: ssh_user, host: host, path: uri.path.as(String))
-    return if git_clone ssh_uri
+    if @uri.scheme
+      raise "Fail to clone #{uri}" if !git_clone uri
+    else
+      return if git_clone URI.new scheme: "ssh", user: "git", host: uri.host, path: uri.path
 
-    http_uri = URI.new(scheme: "https", host: uri.host.as(String), path: uri.path.as(String))
-    if !git_clone http_uri
-      raise "Fail to clone #{uri}"
+      http_uri = URI.new scheme: "https", host: uri.host, path: uri.path
+      if !git_clone http_uri
+        raise "Fail to clone #{http_uri}"
+      end
     end
   end
 

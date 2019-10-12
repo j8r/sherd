@@ -18,4 +18,16 @@ describe Sherd::Lock do
     dependency.should eq metadata
     dependency.uri.should eq URI.new(host: "github.com", path: "/user1/first")
   end
+
+  describe Sherd::Lock::DependencyLock do
+    it "parses a path without a scheme" do
+      deplock = Sherd::Lock::DependencyLock.new "github.com/user/test", SemanticVersion.new(0, 0, 0), ""
+      deplock.uri.should eq URI.new(host: "github.com", path: "/user/test")
+    end
+
+    it "parses a path with a scheme" do
+      deplock = Sherd::Lock::DependencyLock.new "https://github.com/user/test", SemanticVersion.new(0, 0, 0), ""
+      deplock.uri.should eq URI.new(scheme: "https", host: "github.com", path: "/user/test")
+    end
+  end
 end

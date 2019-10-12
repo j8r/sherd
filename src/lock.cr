@@ -13,7 +13,8 @@ struct Sherd::Lock
 
     def initialize(path : String, @version_or_rev : SemanticVersion | Git::Revision, hash : String)
       @hash = hash.lchop "sha512:"
-      @uri = URI.parse "//" + path
+      @uri = URI.parse path
+      @uri = URI.parse "//" + @uri.path if !@uri.host
     end
 
     def to_h : Hash(String, String)

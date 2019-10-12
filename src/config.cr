@@ -11,7 +11,8 @@ struct Sherd::Config
 
     # getter versions
     def initialize(path : String, @version_expr_or_rev : String | Git::Revision | Nil = nil)
-      @uri = URI.parse "//" + path
+      @uri = URI.parse path
+      @uri = URI.parse "//" + @uri.path if !@uri.host
     end
 
     def self.parse(metadata : String) : DependencyMetadata
